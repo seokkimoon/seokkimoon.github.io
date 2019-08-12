@@ -12,6 +12,6 @@
 
 * 먼저, **T map을 통해 ‘이케아 광명점’, ‘이케아 고양점’을 검색 후 주행 이력이 있는 고객** 중 **이케아 방문 전후 1주일 내 11번가 구매 이력이 존재하는 고객의 카테고리별 구매를 분석**해 봤습니다. 그 결과, 이케아 방문 이후 _리빙 카테고리 구매가 증가_하는 것을 확인할 수 있었습니다. 
 
-[11번가 리빙 카테고리 구매 건 수 증가](https://files.slack.com/files-tmb/T02KD5H2N-FMA9QL64V-26bab3ed9c/image_720.png)
+![11번가 리빙 카테고리 구매 건 수 증가](https://files.slack.com/files-tmb/T02KD5H2N-FMA9QL64V-26bab3ed9c/image_720.png)
 
 
