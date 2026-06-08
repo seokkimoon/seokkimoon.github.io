@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>신사업 발굴 (로컬 · 구독)</title>
+<style>
+  :root{--navy:#0f3a5f;--navy2:#16527f;--teal:#14b8a6;--slate:#475569;--line:#e2e8f0;--bg:#f6f8fb;--muted:#64748b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#0f172a;line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:34px 0 26px}
+  header .tag{display:inline-block;font-size:12px;background:rgba(255,255,255,.15);padding:4px 11px;border-radius:999px;margin-bottom:10px}
+  header h1{margin:0 0 6px;font-size:25px;font-weight:800}
+  header p{margin:0;color:#cfe2f1;font-size:13.5px}
+  main{padding:26px 0 60px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:24px}
+  label.fl{display:block;font-size:13px;font-weight:700;color:var(--slate);margin:18px 0 8px}
+  label.fl:first-child{margin-top:0}
+  input[type=text]{width:100%;padding:12px 14px;font-size:15px;border:1.5px solid var(--line);border-radius:11px;outline:none;font-family:inherit}
+  input[type=text]:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,.12)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:13px;font-weight:600;padding:8px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;user-select:none}
+  .chip.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+  .chip.ex{border-style:dashed;color:var(--navy2)}
+  .seg{display:inline-flex;border:1.5px solid var(--line);border-radius:11px;overflow:hidden}
+  .seg button{border:none;background:#fff;padding:10px 18px;font-size:14px;font-weight:600;color:var(--slate);cursor:pointer}
+  .seg button.on{background:var(--navy);color:#fff}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .tag{display:inline-flex;align-items:center;gap:7px;background:#eef6f5;color:#0f766e;border:1px solid #99f6e4;font-size:13px;font-weight:600;padding:6px 10px;border-radius:9px}
+  .tag b{cursor:pointer;opacity:.6}
+  .tagrow{display:flex;gap:8px;margin-top:8px}
+  .tagrow input{flex:1}
+  .addbtn{border:1.5px solid var(--navy);background:var(--navy);color:#fff;border-radius:11px;padding:0 16px;font-weight:700;cursor:pointer}
+  .go{margin-top:22px;width:100%;border:none;background:var(--teal);color:#fff;border-radius:12px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:not-allowed}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:10px}
+  #log{display:none;margin-top:16px;background:#0f1f2e;color:#9fb6cb;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;max-height:240px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="tag">로컬 브리지 · 구독(Claude Code) 실행</span>
+  <h1>신사업 발굴 에이전트</h1>
+  <p>본 PC의 Claude Code(구독 인증·웹검색 내장)로 리서치합니다. 종량 API 키 불필요.</p>
+</div></header>
+<main><div class="wrap"><div class="card">
+  <label class="fl">신사업 영역</label>
+  <input type="text" id="area" placeholder="예) AI 웰니스로봇" autocomplete="off" />
+  <div class="chips" id="examples" style="margin-top:8px"></div>
+
+  <label class="fl">전략 관점 (렌즈) · 복수 선택</label>
+  <div class="chips" id="lenses"></div>
+
+  <label class="fl">벤치마크 기업</label>
+  <div class="tagrow"><input type="text" id="benchInput" placeholder="기업명 입력 후 Enter" autocomplete="off" /><button class="addbtn" id="benchAdd">추가</button></div>
+  <div class="tags" id="benchTags"></div>
+
+  <label class="fl">지역 범위</label>
+  <div class="seg" id="region"><button data-v="국내 중심" class="on">국내 중심</button><button data-v="글로벌 포함">글로벌 포함</button></div>
+
+  <button class="go" id="genBtn">리서치 생성 →</button>
+  <div class="hint">완료까지 수분 소요(웹검색 다회). 구독 한도 내에서 추가 종량과금 없이 실행됩니다.</div>
+  <div id="log"></div>
+</div></div></main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const state={area:"",lenses:new Set(),benchmarks:[],region:"국내 중심"};
+const EX=["AI 웰니스로봇","시니어 요양·시니어케어","마이데이터·금융플랫폼","디지털 헬스케어","펫 보험·헬스케어"];
+const LENSES=["건강증진형 보험 연계","시니어·요양 사업","헬스케어 데이터 활용","신채널·플랫폼","투자·M&A(지분)","ESG·공적연계"];
+EX.forEach(e=>{const c=document.createElement("div");c.className="chip ex";c.textContent=e;c.onclick=()=>{$("#area").value=e;state.area=e;};$("#examples").appendChild(c);});
+$("#area").addEventListener("input",e=>state.area=e.target.value.trim());
+LENSES.forEach(l=>{const c=document.createElement("div");c.className="chip";c.textContent=l;c.onclick=()=>{if(state.lenses.has(l)){state.lenses.delete(l);c.classList.remove("sel");}else{state.lenses.add(l);c.classList.add("sel");}};$("#lenses").appendChild(c);});
+function renderTags(){const t=$("#benchTags");t.innerHTML="";state.benchmarks.forEach((b,i)=>{const s=document.createElement("span");s.className="tag";s.innerHTML=b+" <b>✕</b>";s.querySelector("b").onclick=()=>{state.benchmarks.splice(i,1);renderTags();};t.appendChild(s);});}
+function addBench(v){v=(v||"").trim();if(v&&!state.benchmarks.includes(v)){state.benchmarks.push(v);renderTags();}}
+$("#benchAdd").onclick=()=>{addBench($("#benchInput").value);$("#benchInput").value="";};
+$("#benchInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addBench(e.target.value);e.target.value="";}});
+$$("#region button").forEach(b=>b.onclick=()=>{$$("#region button").forEach(x=>x.classList.remove("on"));b.classList.add("on");state.region=b.dataset.v;});
+function log(t){const b=$("#log");b.style.display="block";const d=document.createElement("div");d.textContent=t;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+$("#genBtn").onclick=async()=>{
+  if(!state.area){alert("신사업 영역을 입력하세요.");return;}
+  const btn=$("#genBtn");btn.disabled=true;const orig=btn.textContent;btn.textContent="생성 중… (수분 소요)";$("#log").innerHTML="";
+  log("Claude Code(구독)로 리서치 시작 — 영역: "+state.area);
+  log("※ 웹검색을 여러 번 수행하므로 완료까지 시간이 걸립니다.");
+  try{
+    const res=await fetch("/generate",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({area:state.area,lenses:[...state.lenses],benchmarks:state.benchmarks,region:state.region})});
+    const data=await res.json();
+    if(!data.ok)throw new Error(data.error||"생성 실패");
+    sessionStorage.setItem("nbd_report",JSON.stringify(data.report));
+    log("✅ 완료 — 리포트로 이동합니다");
+    location.href="/report.html";
+  }catch(e){log("✗ 오류: "+(e&&e.message||e));log("※ 터미널 로그와 claude 로그인 상태를 확인하세요.");btn.disabled=false;btn.textContent=orig;}
+};
+</script>
+</body>
+</html>
