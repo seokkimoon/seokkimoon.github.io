@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>신사업 발굴 리포트</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  :root{
+    --navy:#0f3a5f; --navy2:#16527f; --teal:#14b8a6; --amber:#f59e0b;
+    --green:#16a34a; --red:#dc2626; --slate:#475569; --line:#e2e8f0;
+    --bg:#f6f8fb; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --shadow:0 1px 3px rgba(15,23,42,.08),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;
+    line-height:1.65; font-size:15px;}
+  a{color:var(--navy2); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px}
+  header.hero{background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:38px 0 30px}
+  .hero .tag{display:inline-block; font-size:12px; letter-spacing:.5px; background:rgba(255,255,255,.15);
+    padding:4px 10px; border-radius:999px; margin-bottom:12px}
+  .hero h1{margin:0 0 6px; font-size:30px; font-weight:800; letter-spacing:-.5px}
+  .hero .sub{color:#cfe2f1; font-size:14px; margin-bottom:18px}
+  .verdict{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:10px}
+  .badge{font-weight:800; font-size:18px; padding:10px 18px; border-radius:12px; display:inline-flex; gap:8px; align-items:center}
+  .badge.watchgo{background:var(--amber); color:#3a2600}
+  .verdict .vtext{font-size:14px; color:#e8f1f8; max-width:680px}
+  .srcbanner{font-size:12.5px; padding:8px 0; text-align:center; background:#ecfdf5; color:#065f46; border-bottom:1px solid #a7f3d0}
+  .srcbanner.sample{background:#fff7ed; color:#9a3412; border-color:#fed7aa}
+  nav.sticky{position:sticky; top:0; z-index:50; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+  nav.sticky .wrap{display:flex; gap:4px; overflow-x:auto; padding:8px 20px}
+  nav.sticky a{font-size:13px; font-weight:600; color:var(--slate); padding:8px 12px; border-radius:8px; white-space:nowrap}
+  nav.sticky a:hover{background:#eef2f7; text-decoration:none}
+  nav.sticky a.active{background:var(--navy); color:#fff}
+  nav.sticky .spacer{flex:1}
+  .btn{font-size:13px; font-weight:600; border:1px solid var(--line); background:#fff; color:var(--slate); padding:7px 12px; border-radius:8px; cursor:pointer}
+  .btn:hover{background:#f1f5f9}
+  section{padding:34px 0 6px}
+  h2.sec{font-size:21px; font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px}
+  h2.sec .n{background:var(--teal); color:#fff; width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:14px}
+  .sec-desc{color:var(--muted); font-size:14px; margin:0 0 18px}
+  .grid{display:grid; gap:16px}
+  .cards-4{grid-template-columns:repeat(4,1fr)}
+  .cards-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:860px){.cards-4{grid-template-columns:repeat(2,1fr)} .cards-2{grid-template-columns:1fr}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; box-shadow:var(--shadow)}
+  .kpi .label{font-size:12px; color:var(--muted); font-weight:600}
+  .kpi .value{font-size:24px; font-weight:800; color:var(--navy); margin:4px 0 2px; letter-spacing:-.5px}
+  .kpi .sub{font-size:12px; color:var(--slate)}
+  .chart-card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .chart-card h3{margin:0 0 12px; font-size:15px; font-weight:700}
+  .chart-box{position:relative; height:300px}
+  .chart-box.tall{height:380px}
+  .chart-box>div{width:100%; height:100%}
+  .tabs{display:flex; gap:6px; border-bottom:2px solid var(--line); margin:6px 0 18px}
+  .tabs button{background:none; border:none; padding:10px 14px; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px}
+  .tabs button.active{color:var(--navy); border-bottom-color:var(--navy)}
+  .tabpane{display:none} .tabpane.active{display:block}
+  table{width:100%; border-collapse:collapse; font-size:13px; background:#fff; border-radius:12px; overflow:hidden}
+  th,td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:#f1f5f9; font-weight:700; color:var(--slate); font-size:12px}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px}
+  .pill.hi{background:#fee2e2; color:#991b1b}
+  .pill.mid{background:#fef3c7; color:#92400e}
+  .pill.lo{background:#dcfce7; color:#166534}
+  ul.clean{list-style:none; padding:0; margin:0}
+  ul.clean li{padding:8px 0 8px 26px; position:relative; border-bottom:1px dashed var(--line); font-size:14px}
+  ul.clean li:before{content:"✓"; position:absolute; left:0; top:8px; color:var(--teal); font-weight:800}
+  ul.clean li:last-child{border-bottom:none}
+  .funnel{display:flex; flex-direction:column; gap:8px; align-items:center; margin-top:6px}
+  .funnel .row{color:#fff; border-radius:10px; padding:12px 16px; text-align:center; box-shadow:var(--shadow)}
+  .funnel .t{font-weight:800; font-size:13px} .funnel .v{font-size:13px; opacity:.95}
+  .f1{background:var(--navy); width:100%}
+  .f2{background:var(--navy2); width:72%}
+  .f3{background:var(--teal); width:46%}
+  .force{display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px dashed var(--line)}
+  .force:last-child{border-bottom:none}
+  .force .fl{flex:1; font-size:14px; font-weight:600}
+  .force .bar{flex:1.4; height:10px; background:#eef2f7; border-radius:6px; overflow:hidden}
+  .force .bar i{display:block; height:100%}
+  .flow{display:flex; flex-wrap:wrap; gap:10px; align-items:stretch}
+  .flow .step{flex:1; min-width:180px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px}
+  .flow .step .h{font-weight:800; font-size:14px; margin-bottom:4px}
+  .flow .step .d{font-size:12.5px; color:var(--slate)}
+  .flow .arrow{display:flex; align-items:center; color:var(--muted); font-size:20px}
+  @media(max-width:860px){.flow .arrow{display:none}}
+  .bbb{display:grid; grid-template-columns:1fr; gap:14px}
+  .bbb .col{border:1px solid var(--line); border-radius:14px; padding:16px; background:#fff; box-shadow:var(--shadow)}
+  .bbb .col h4{margin:0 0 4px; font-size:16px; font-weight:800}
+  .bbb .verdict-tag{font-size:12px; font-weight:800; padding:3px 9px; border-radius:999px; display:inline-block; margin-bottom:8px}
+  .vt-rec{background:#dcfce7; color:#166534}
+  .vt-opt{background:#e0f2fe; color:#075985}
+  .vt-no{background:#fee2e2; color:#991b1b}
+  .bbb .col p{font-size:13px; color:var(--slate); margin:6px 0 0}
+  details.acc{background:#fff; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; overflow:hidden}
+  details.acc summary{cursor:pointer; padding:12px 16px; font-weight:700; font-size:14px; list-style:none}
+  details.acc summary::-webkit-details-marker{display:none}
+  details.acc summary:before{content:"▸ "; color:var(--teal)}
+  details.acc[open] summary:before{content:"▾ "}
+  details.acc .body{padding:0 16px 14px}
+  details.acc .body a{display:block; font-size:12.5px; padding:5px 0; border-bottom:1px dashed var(--line)}
+  .note{background:#fffbeb; border:1px solid #fde68a; color:#854d0e; font-size:12.5px; padding:10px 14px; border-radius:10px; margin-top:14px}
+  footer{margin-top:40px; padding:24px 0 50px; color:var(--muted); font-size:12px; border-top:1px solid var(--line)}
+  @media print{ nav.sticky,.btn,.srcbanner{display:none!important} header.hero{background:var(--navy)!important; -webkit-print-color-adjust:exact; print-color-adjust:exact} section{page-break-inside:avoid} }
+</style>
+</head>
+<body>
+<noscript><div style="background:#fee2e2;color:#991b1b;padding:12px;text-align:center">이 리포트는 JavaScript로 렌더링됩니다. 브라우저에서 열어 주세요.</div></noscript>
+<div class="srcbanner" id="srcBanner"></div>
+<header class="hero">
+  <div class="wrap">
+    <span class="tag" id="h-tag"></span>
+    <h1 id="h-title"></h1>
+    <div class="sub" id="h-sub"></div>
+    <div class="verdict">
+      <span class="badge watchgo" id="h-badge"></span>
+      <span class="vtext" id="h-vtext"></span>
+    </div>
+  </div>
+</header>
+<nav class="sticky">
+  <div class="wrap">
+    <a href="#summary">종합</a><a href="#market">시장</a><a href="#competition">경쟁</a>
+    <a href="#regulation">규제</a><a href="#opinion">진입의견·B/B/B</a><a href="#sources">출처</a>
+    <span class="spacer"></span>
+    <button class="btn" onclick="window.print()">🖨 PDF 저장</button>
+  </div>
+</nav>
+<div class="wrap">
+  <section id="summary">
+    <h2 class="sec"><span class="n">◆</span>종합 평가</h2>
+    <p class="sec-desc">3개 도메인(시장·경쟁·규제) 리서치를 종합한 진입 초기의견.</p>
+    <div class="grid cards-4" id="kpis"></div>
+    <div class="grid cards-2" style="margin-top:16px">
+      <div class="chart-card"><h3>4축 종합 평가 (5점 척도, 높을수록 우호적)</h3><div class="chart-box"><div id="radarChart"></div></div></div>
+      <div class="card"><h3 style="margin:0 0 10px; font-size:15px">핵심 논리</h3><ul class="clean" id="summaryPoints"></ul></div>
+    </div>
+  </section>
+  <section>
+    <div class="tabs" id="domainTabs">
+      <button data-pane="market" class="active">① 시장조사</button>
+      <button data-pane="competition">② 경쟁환경</button>
+      <button data-pane="regulation">③ 규제</button>
+    </div>
+    <div class="tabpane active" id="market">
+      <h2 class="sec"><span class="n">1</span>시장조사</h2>
+      <p class="sec-desc">시장 규모·성장률·동인·TAM/SAM/SOM. 수치는 출처 탭 참조.</p>
+      <div class="grid cards-2">
+        <div class="chart-card"><h3>시장 규모 추이</h3><div class="chart-box"><div id="marketSizeChart"></div></div></div>
+        <div class="chart-card"><h3>세그먼트별 CAGR (%)</h3><div class="chart-box"><div id="cagrChart"></div></div></div>
+      </div>
+      <div class="grid cards-2" style="margin-top:16px">
+        <div class="chart-card"><h3>TAM / SAM / SOM (추정)</h3><div class="funnel" id="funnel"></div>
+          <div class="note">⚠️ 추정치 — 의사결정 전 1차 출처 재확인 권장.</div></div>
+        <div class="card"><h3 style="margin:0 0 10px; font-size:15px">성장 동인</h3><ul class="clean" id="drivers"></ul></div>
+      </div>
+    </div>
+    <div class="tabpane" id="competition">
+      <h2 class="sec"><span class="n">2</span>경쟁환경</h2>
+      <p class="sec-desc">주요 플레이어 포지셔닝과 경쟁 다이내믹스.</p>
+      <div class="chart-card"><h3>플레이어 포지셔닝 맵 (x: 상용화 성숙도 · y: 프리미엄/가격대 · 원: 시장 영향력)</h3>
+        <div class="chart-box tall"><div id="bubbleChart"></div></div></div>
+      <div class="grid cards-2" style="margin-top:16px">
+        <div class="card"><h3 style="margin:0 0 10px; font-size:15px">경쟁 다이내믹스 (5 Forces)</h3><div id="forces"></div></div>
+        <div class="card"><h3 style="margin:0 0 10px; font-size:15px">⚠️ 경쟁사 동향</h3><ul class="clean" id="incumbents"></ul></div>
+      </div>
+      <div class="card" style="margin-top:16px"><h3 style="margin:0 0 12px; font-size:15px">주요 플레이어 비교</h3>
+        <div style="overflow-x:auto"><table id="playerTable"></table></div></div>
+    </div>
+    <div class="tabpane" id="regulation">
+      <h2 class="sec"><span class="n">3</span>규제</h2>
+      <p class="sec-desc"><strong>1차 의견이며 최종 법무·컴플라이언스 검토 필요.</strong></p>
+      <div class="card"><h3 style="margin:0 0 12px; font-size:15px">진입 규제 흐름</h3><div class="flow" id="regFlow"></div></div>
+      <div class="card" style="margin-top:16px"><h3 style="margin:0 0 12px; font-size:15px">B/B/B 경로별 규제 관문</h3>
+        <div style="overflow-x:auto"><table id="regChecklist"></table></div></div>
+    </div>
+  </section>
+  <section id="opinion">
+    <h2 class="sec"><span class="n">◎</span>진입 초기의견 &amp; B/B/B</h2>
+    <p class="sec-desc" id="recoText"></p>
+    <div class="grid cards-2">
+      <div class="chart-card"><h3>Build / Borrow / Buy 비교 (5점 척도)</h3><div class="chart-box"><div id="bbbChart"></div></div></div>
+      <div class="bbb" id="bbbCards"></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3 style="margin:0 0 10px; font-size:15px">다음 단계</h3><ul class="clean" id="nextSteps"></ul></div>
+  </section>
+  <section id="sources">
+    <h2 class="sec"><span class="n">⌕</span>출처</h2>
+    <p class="sec-desc">도메인별 1차 출처. 수치·규제는 의사결정 전 원문 재확인 권장.</p>
+    <div id="sourceAcc"></div>
+  </section>
+  <footer><div id="footMeta"></div>
+    <div style="margin-top:8px">신사업 발굴 에이전트 · 데이터 구동형 리포트 (REPORT 객체 기반 렌더)</div></footer>
+</div>
+<script>
+/* ===== 샘플(데이터 없을 때 표시) — AI 웰니스로봇 파일럿 ===== */
+const SAMPLE = {
+  meta:{tag:"신사업 발굴 · 샘플",title:"AI 웰니스로봇 — 신사업 발굴 리포트 (샘플)",
+    subtitle:"위저드에서 영역을 생성하면 이 자리에 실제 리포트가 렌더됩니다 · 기준일 2026-06-05",
+    foot:"샘플 데이터 · 출처: KIRI·통계청·식약처 등"},
+  verdict:{badge:"조건부 Go",text:"직접 제조는 No-go, Borrow 중심 B2B2C + 선택적 Buy 권고."},
+  kpis:[{label:"시장 CAGR",value:"~17.6%",sub:"2025–2030"},{label:"TAM(2030)",value:"80~120억$",sub:"추정"},
+    {label:"SAM/SOM(한국)",value:"~4,750/570억원",sub:"추정"},{label:"초고령사회",value:"20.3%",sub:"65세+ 2025"}],
+  scores:{labels:["시장 매력도","경쟁 우호도","규제 용이성","전략적 적합성"],values:[4,2.5,3,5]},
+  summaryPoints:["인접시장 고성장(16~28%)","나무엑스 선점·삼성/LG 지연","경쟁 생보사 선행","생보사 적합성 최상"],
+  market:{sizes:{categories:["컴패니언 로봇","시니어케어 로봇"],y2024:[20.9,31],y2030:[54.8,77]},
+    cagr:{labels:["개인건강·웰니스","서비스로봇","컴패니언 로봇","시니어케어"],values:[28.1,19.5,17.6,16.1]},
+    funnel:[{t:"TAM(글로벌)",v:"80~120억$"},{t:"SAM(한국)",v:"2,700~6,800억원"},{t:"SOM(자사)",v:"135~1,000억원"}],
+    drivers:["초고령사회 진입","독거노인 214만","복지용구 AI 돌봄로봇 급여 편입","디지털 헬스케어 확산"]},
+  competition:{players:[{n:"나무엑스 A1",x:9,y:8,r:24,c:"#0f3a5f"},{n:"삼성 볼리",x:3,y:8,r:18,c:"#16527f"},
+    {n:"LG Q9",x:2,y:7,r:15,c:"#16527f"},{n:"효돌",x:8,y:2,r:15,c:"#14b8a6"},{n:"ElliQ",x:8,y:5,r:13,c:"#f59e0b"}],
+    forces:[{n:"신규 진입",lvl:"높음",v:85},{n:"공급자",lvl:"중간",v:55},{n:"구매자",lvl:"높음",v:80},{n:"대체재",lvl:"높음",v:80},{n:"기존 경쟁",lvl:"중간",v:55}],
+    incumbents:["신한라이프 — 신한라이프케어·LGU+ 제휴","KT — AI 케어로봇","케어링 — 돌봄로봇 사업부"],
+    players_table:[["나무엑스 A1","프리미엄 웰니스","렌탈/구독","양산·CES 혁신상","hi"],["삼성 볼리","AI 홈허브","미정","출시 연기","mid"],["효돌","시니어 정서","B2G","5,800대 보급","lo"]]},
+  regulation:{flow:[{h:"① 사용목적",d:"진단 표방 여부가 분기점"},{h:"웰니스(공산품)",d:"허가 불요"},{h:"디지털건강지원기기",d:"자율신고·성능인증"},{h:"의료기기",d:"식약처 허가"}],
+    checklist:[["Build","제품분류+부수업무 신고","분류 확정·민감정보 동의"],["Borrow","제휴+처리위탁","신고대상·위탁통제"],["Buy","자회사 소유 §115","승인·재무요건"]]},
+  opinion:{reco:"조건부 Go — 디바이스 제휴 조달 + 데이터 접점 활용 B2B2C.",
+    bbbChart:{criteria:["실행 속도","자본 효율","역량 내재화","리스크 관리"],Build:[2,2,5,2],Borrow:[5,5,3,4],Buy:[3,2,4,3]},
+    bbb:[{name:"Build",tag:"비권장",cls:"vt-no",note:"하드웨어 경쟁 열위"},{name:"Borrow",tag:"권장·1순위",cls:"vt-rec",note:"나무엑스·효돌 제휴 B2B2C"},{name:"Buy",tag:"선택적",cls:"vt-opt",note:"스타트업 지분투자(§115)"}],
+    nextSteps:["Phase 2 B/B/B 정밀비교","조기 PoC","규제 사전 점검","수치 재검증"]},
+  sources:{"시장조사":[["Grand View Research","https://www.grandviewresearch.com/"]],"경쟁환경":[["나무엑스 공식","https://www.namuhx.com/"]],"규제":[["금융위","https://www.fsc.go.kr/"]]}
+};
+
+function loadReport(){ try{const s=sessionStorage.getItem("nbd_report"); if(s) return {data:JSON.parse(s),live:true};}catch(e){} return {data:SAMPLE,live:false}; }
+const _r=loadReport(); const REPORT=_r.data;
+(function(){ const b=document.getElementById("srcBanner");
+  if(_r.live){ b.textContent="● 실시간 생성된 리포트 (Claude API · 웹검색 기반)"; }
+  else{ b.className="srcbanner sample"; b.textContent="● 샘플 미리보기 — 위저드에서 영역을 생성하면 실제 리포트가 표시됩니다"; } })();
+
+const $=(s)=>document.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+const C={navy:"#0f3a5f",navy2:"#16527f",teal:"#14b8a6",amber:"#f59e0b",slate:"#475569",line:"#e2e8f0",grey:"#cbd5e1",muted:"#94a3b8"};
+const NS="http://www.w3.org/2000/svg";
+const A=(x)=>Array.isArray(x)?x:[];
+
+$("#h-tag").textContent=(REPORT.meta&&REPORT.meta.tag)||"신사업 발굴";
+$("#h-title").textContent=(REPORT.meta&&REPORT.meta.title)||"신사업 발굴 리포트";
+$("#h-sub").textContent=(REPORT.meta&&REPORT.meta.subtitle)||"";
+$("#h-badge").textContent="판정: "+((REPORT.verdict&&REPORT.verdict.badge)||"-");
+$("#h-vtext").textContent=(REPORT.verdict&&REPORT.verdict.text)||"";
+$("#footMeta").textContent=(REPORT.meta&&REPORT.meta.foot)||"";
+
+A(REPORT.kpis).forEach(k=>{const c=el("div","card kpi");c.appendChild(el("div","label",k.label));c.appendChild(el("div","value",k.value));c.appendChild(el("div","sub",k.sub||""));$("#kpis").appendChild(c);});
+A(REPORT.summaryPoints).forEach(p=>$("#summaryPoints").appendChild(el("li",null,p)));
+const M=REPORT.market||{};
+A(M.drivers).forEach(d=>$("#drivers").appendChild(el("li",null,d)));
+const CO=REPORT.competition||{};
+A(CO.incumbents).forEach(d=>$("#incumbents").appendChild(el("li",null,d)));
+const OP=REPORT.opinion||{};
+A(OP.nextSteps).forEach(d=>$("#nextSteps").appendChild(el("li",null,d)));
+$("#recoText").textContent=OP.reco||"";
+A(M.funnel).forEach((f,i)=>{const r=el("div","row f"+(i+1));r.appendChild(el("div","t",f.t));r.appendChild(el("div","v",f.v));$("#funnel").appendChild(r);});
+A(CO.forces).forEach(f=>{const row=el("div","force");row.appendChild(el("div","fl",f.n));const cls=f.v>=75?"#dc2626":f.v>=50?"#f59e0b":"#16a34a";const bar=el("div","bar");const i=el("i");i.style.width=f.v+"%";i.style.background=cls;bar.appendChild(i);row.appendChild(bar);const p=el("span");p.style.cssText="font-size:12px;font-weight:700;width:42px;text-align:right;color:"+cls;p.textContent=f.lvl;row.appendChild(p);$("#forces").appendChild(row);});
+const RG=REPORT.regulation||{};
+A(RG.flow).forEach((s,idx)=>{const step=el("div","step");step.appendChild(el("div","h",s.h));step.appendChild(el("div","d",s.d));$("#regFlow").appendChild(step);if(idx<A(RG.flow).length-1)$("#regFlow").appendChild(el("div","arrow","→"));});
+(function(){const t=$("#playerTable");t.innerHTML="<thead><tr><th>기업/제품</th><th>포지션</th><th>모델</th><th>상태</th><th>성숙도</th></tr></thead>";const tb=el("tbody");A(CO.players_table).forEach(r=>{const tr=el("tr");tr.innerHTML=`<td><strong>${r[0]}</strong></td><td>${r[1]||""}</td><td>${r[2]||""}</td><td>${r[3]||""}</td><td><span class="pill ${r[4]||"mid"}">${r[4]=="hi"?"상용화":r[4]=="lo"?"보급중":"개발/지연"}</span></td>`;tb.appendChild(tr);});t.appendChild(tb);})();
+(function(){const t=$("#regChecklist");t.innerHTML="<thead><tr><th>경로</th><th>규제 관문</th><th>핵심 점검</th></tr></thead>";const tb=el("tbody");A(RG.checklist).forEach(r=>{const tr=el("tr");tr.innerHTML=`<td><strong>${r[0]}</strong></td><td>${r[1]||""}</td><td>${r[2]||""}</td>`;tb.appendChild(tr);});t.appendChild(tb);})();
+A(OP.bbb).forEach(b=>{const col=el("div","col");col.innerHTML=`<h4>${b.name}</h4><span class="verdict-tag ${b.cls||"vt-opt"}">${b.tag||""}</span><p>${b.note||""}</p>`;$("#bbbCards").appendChild(col);});
+Object.entries(REPORT.sources||{}).forEach(([k,arr],i)=>{const d=el("details","acc");if(i===0)d.open=true;d.appendChild(el("summary",null,k+" ("+A(arr).length+")"));const body=el("div","body");A(arr).forEach(s=>{const a=el("a");a.href=s[1]||"#";a.target="_blank";a.rel="noopener";a.textContent=s[0]||s[1];body.appendChild(a);});d.appendChild(body);$("#sourceAcc").appendChild(d);});
+
+/* ===== SVG 차트 (의존성 없음) ===== */
+function svgEl(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function mount(id,w,h){const c=$("#"+id);if(!c)return null;c.innerHTML="";const s=svgEl("svg",{viewBox:"0 0 "+w+" "+h,width:"100%",height:"100%",preserveAspectRatio:"xMidYMid meet"});c.appendChild(s);return s;}
+function tx(s,x,y,t,o){o=o||{};const e=svgEl("text",{x,y,"font-size":o.size||12,fill:o.fill||C.slate,"text-anchor":o.anchor||"start","font-weight":o.weight||"400"});e.textContent=t;s.appendChild(e);return e;}
+function vbar(id,cats,series,unit){const W=600,H=320,pad={l:46,r:14,t:18,b:56};const s=mount(id,W,H);if(!s)return;const max=Math.max(...series.flatMap(se=>se.values),1)*1.18;const iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;for(let g=0;g<=4;g++){const y=pad.t+ih-ih*g/4;s.appendChild(svgEl("line",{x1:pad.l,y1:y,x2:W-pad.r,y2:y,stroke:C.line}));tx(s,pad.l-6,y+4,Math.round(max*g/4),{anchor:"end",size:10,fill:C.muted});}if(unit)tx(s,pad.l-6,pad.t-6,unit,{size:10,fill:C.muted});const gw=iw/cats.length,bw=Math.min(42,gw/(series.length+1));cats.forEach((cat,ci)=>{const gx=pad.l+gw*ci+gw/2;series.forEach((se,si)=>{const v=se.values[ci]||0,bh=ih*v/max;const x=gx-(series.length*bw)/2+si*bw,y=pad.t+ih-bh;s.appendChild(svgEl("rect",{x,y,width:bw-3,height:bh,rx:4,fill:se.color}));tx(s,x+(bw-3)/2,y-4,v,{anchor:"middle",size:10,weight:"700",fill:C.slate});});tx(s,gx,H-pad.b+18,cat,{anchor:"middle",size:11,weight:"600"});});series.forEach((se,si)=>{const lx=pad.l+si*130,ly=H-10;s.appendChild(svgEl("rect",{x:lx,y:ly-10,width:11,height:11,rx:2,fill:se.color}));tx(s,lx+16,ly,se.label,{size:11});});}
+function hbar(id,items){const W=600,rowH=48,pad={l:6,r:50,t:8,b:6},labW=170;const H=pad.t+pad.b+items.length*rowH;const s=mount(id,W,H);if(!s)return;const max=Math.max(...items.map(i=>i.value),1)*1.12;const bw=W-pad.l-pad.r-labW;items.forEach((it,i)=>{const y=pad.t+i*rowH,x0=pad.l+labW;tx(s,pad.l,y+rowH/2+4,it.label,{size:11,weight:"600"});s.appendChild(svgEl("rect",{x:x0,y:y+11,width:bw,height:rowH-24,rx:5,fill:"#eef2f7"}));const w=bw*it.value/max;s.appendChild(svgEl("rect",{x:x0,y:y+11,width:w,height:rowH-24,rx:5,fill:it.color}));tx(s,x0+w+6,y+rowH/2+4,it.value+"%",{size:11,weight:"700",fill:it.color});});}
+function radar(id,labels,values,max){const W=440,H=320,cx=W/2,cy=H/2,R=104,n=labels.length;const s=mount(id,W,H);if(!s||!n)return;const pt=(i,r)=>{const a=-Math.PI/2+2*Math.PI*i/n;return[cx+r*Math.cos(a),cy+r*Math.sin(a)];};for(let g=1;g<=4;g++){let d="";for(let i=0;i<n;i++){const[x,y]=pt(i,R*g/4);d+=(i?"L":"M")+x+" "+y;}s.appendChild(svgEl("path",{d:d+"Z",fill:"none",stroke:C.line}));}for(let i=0;i<n;i++){const[x,y]=pt(i,R);s.appendChild(svgEl("line",{x1:cx,y1:cy,x2:x,y2:y,stroke:C.line}));const[lx,ly]=pt(i,R+22);tx(s,lx,ly+4,labels[i],{anchor:"middle",size:11,weight:"700"});}let d="";values.forEach((v,i)=>{const[x,y]=pt(i,R*v/max);d+=(i?"L":"M")+x+" "+y;});s.appendChild(svgEl("path",{d:d+"Z",fill:"rgba(20,184,166,.20)",stroke:C.teal,"stroke-width":2}));values.forEach((v,i)=>{const[x,y]=pt(i,R*v/max);s.appendChild(svgEl("circle",{cx:x,cy:y,r:4,fill:C.navy}));tx(s,x,y-9,v,{anchor:"middle",size:10,weight:"700",fill:C.navy});});}
+function bubble(id,pts,xmax,ymax,xl,yl){const W=600,H=380,pad={l:50,r:18,t:14,b:46};const s=mount(id,W,H);if(!s)return;const iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;const X=v=>pad.l+iw*v/xmax,Y=v=>pad.t+ih-ih*v/ymax;for(let g=0;g<=5;g++){const x=pad.l+iw*g/5,y=pad.t+ih*g/5;s.appendChild(svgEl("line",{x1:x,y1:pad.t,x2:x,y2:pad.t+ih,stroke:C.line}));s.appendChild(svgEl("line",{x1:pad.l,y1:y,x2:pad.l+iw,y2:y,stroke:C.line}));}tx(s,pad.l+iw/2,H-8,xl,{anchor:"middle",size:11,weight:"600"});const yt=tx(s,16,pad.t+ih/2,yl,{anchor:"middle",size:11,weight:"600"});yt.setAttribute("transform","rotate(-90 16 "+(pad.t+ih/2)+")");pts.forEach(p=>{const x=X(p.x),y=Y(p.y);const c=svgEl("circle",{cx:x,cy:y,r:p.r||10,fill:(p.c||C.navy)+"cc",stroke:p.c||C.navy,"stroke-width":1});const ti=svgEl("title");ti.textContent=p.n;c.appendChild(ti);s.appendChild(c);tx(s,x,y-(p.r||10)-4,p.n,{anchor:"middle",size:9.5,weight:"700",fill:p.c||C.navy});});}
+
+if(REPORT.scores)radar("radarChart",A(REPORT.scores.labels),A(REPORT.scores.values),5);
+if(M.sizes)vbar("marketSizeChart",A(M.sizes.categories),[{label:"기준연도",values:A(M.sizes.y2024),color:C.grey},{label:"전망",values:A(M.sizes.y2030),color:C.navy}],M.sizes.unit||"");
+if(M.cagr)hbar("cagrChart",A(M.cagr.labels).map((l,i)=>({label:l,value:A(M.cagr.values)[i]||0,color:[C.amber,C.navy2,C.teal,C.slate][i%4]})));
+if(CO.players)bubble("bubbleChart",A(CO.players),10,10,"상용화 성숙도 →","프리미엄/가격대 →");
+if(OP.bbbChart){const b=OP.bbbChart;vbar("bbbChart",A(b.criteria),[{label:"Build",values:A(b.Build),color:"#dc2626"},{label:"Borrow",values:A(b.Borrow),color:"#16a34a"},{label:"Buy",values:A(b.Buy),color:"#0284c7"}]);}
+
+document.querySelectorAll("#domainTabs button").forEach(btn=>{btn.addEventListener("click",()=>{document.querySelectorAll("#domainTabs button").forEach(b=>b.classList.remove("active"));document.querySelectorAll(".tabpane").forEach(p=>p.classList.remove("active"));btn.classList.add("active");$("#"+btn.dataset.pane).classList.add("active");});});
+const navLinks=document.querySelectorAll("nav.sticky a");const secs=[...navLinks].map(a=>document.querySelector(a.getAttribute("href"))).filter(Boolean);
+window.addEventListener("scroll",()=>{let cur=secs[0]&&secs[0].id;secs.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id;});navLinks.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+cur));},{passive:true});
+</script>
+</body>
+</html>
