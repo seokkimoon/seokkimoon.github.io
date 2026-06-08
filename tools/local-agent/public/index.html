@@ -60,6 +60,9 @@
   <label class="fl">지역 범위</label>
   <div class="seg" id="region"><button data-v="국내 중심" class="on">국내 중심</button><button data-v="글로벌 포함">글로벌 포함</button></div>
 
+  <label class="fl">접속 암호</label>
+  <input type="password" id="pass" placeholder="관리자에게 받은 접속 암호" autocomplete="off" />
+
   <button class="go" id="genBtn">리서치 생성 →</button>
   <div class="hint">완료까지 수분 소요(웹검색 다회). 구독 한도 내에서 추가 종량과금 없이 실행됩니다.</div>
   <div id="log"></div>
@@ -78,14 +81,16 @@ $("#benchAdd").onclick=()=>{addBench($("#benchInput").value);$("#benchInput").va
 $("#benchInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addBench(e.target.value);e.target.value="";}});
 $$("#region button").forEach(b=>b.onclick=()=>{$$("#region button").forEach(x=>x.classList.remove("on"));b.classList.add("on");state.region=b.dataset.v;});
 function log(t){const b=$("#log");b.style.display="block";const d=document.createElement("div");d.textContent=t;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+try{const p=localStorage.getItem("nbd_pass");if(p)$("#pass").value=p;}catch(e){}
 $("#genBtn").onclick=async()=>{
   if(!state.area){alert("신사업 영역을 입력하세요.");return;}
+  try{localStorage.setItem("nbd_pass",$("#pass").value);}catch(e){}
   const btn=$("#genBtn");btn.disabled=true;const orig=btn.textContent;btn.textContent="생성 중… (수분 소요)";$("#log").innerHTML="";
   log("Claude Code(구독)로 리서치 시작 — 영역: "+state.area);
   log("※ 웹검색을 여러 번 수행하므로 완료까지 시간이 걸립니다.");
   try{
     const res=await fetch("/generate",{method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({area:state.area,lenses:[...state.lenses],benchmarks:state.benchmarks,region:state.region})});
+      body:JSON.stringify({area:state.area,lenses:[...state.lenses],benchmarks:state.benchmarks,region:state.region,password:$("#pass").value})});
     const data=await res.json();
     if(!data.ok)throw new Error(data.error||"생성 실패");
     sessionStorage.setItem("nbd_report",JSON.stringify(data.report));
