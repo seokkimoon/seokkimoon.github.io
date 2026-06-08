@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 웰니스로봇 — 신사업 발굴 리포트</title>
+<meta name="robots" content="noindex, nofollow" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#0f3a5f; --navy2:#16527f; --teal:#14b8a6; --amber:#f59e0b;
+    --green:#16a34a; --red:#dc2626; --slate:#475569; --line:#e2e8f0;
+    --bg:#f6f8fb; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --shadow:0 1px 3px rgba(15,23,42,.08),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","맑은 고딕",sans-serif;
+    line-height:1.65; font-size:15px;
+  }
+  a{color:var(--navy2); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px}
+
+  /* Header */
+  header.hero{background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:38px 0 30px}
+  .hero .tag{display:inline-block; font-size:12px; letter-spacing:.5px; background:rgba(255,255,255,.15);
+    padding:4px 10px; border-radius:999px; margin-bottom:12px}
+  .hero h1{margin:0 0 6px; font-size:30px; font-weight:800; letter-spacing:-.5px}
+  .hero .sub{color:#cfe2f1; font-size:14px; margin-bottom:18px}
+  .verdict{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:10px}
+  .badge{font-weight:800; font-size:18px; padding:10px 18px; border-radius:12px; display:inline-flex; gap:8px; align-items:center}
+  .badge.watchgo{background:var(--amber); color:#3a2600}
+  .verdict .vtext{font-size:14px; color:#e8f1f8; max-width:680px}
+
+  /* Sticky nav */
+  nav.sticky{position:sticky; top:0; z-index:50; background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+  nav.sticky .wrap{display:flex; gap:4px; overflow-x:auto; padding:8px 20px}
+  nav.sticky a{font-size:13px; font-weight:600; color:var(--slate); padding:8px 12px; border-radius:8px; white-space:nowrap}
+  nav.sticky a:hover{background:#eef2f7; text-decoration:none}
+  nav.sticky a.active{background:var(--navy); color:#fff}
+  nav.sticky .spacer{flex:1}
+  .btn{font-size:13px; font-weight:600; border:1px solid var(--line); background:#fff; color:var(--slate);
+    padding:7px 12px; border-radius:8px; cursor:pointer}
+  .btn:hover{background:#f1f5f9}
+
+  section{padding:34px 0 6px}
+  h2.sec{font-size:21px; font-weight:800; margin:0 0 4px; display:flex; align-items:center; gap:10px}
+  h2.sec .n{background:var(--teal); color:#fff; width:28px; height:28px; border-radius:8px;
+    display:inline-flex; align-items:center; justify-content:center; font-size:14px}
+  .sec-desc{color:var(--muted); font-size:14px; margin:0 0 18px}
+
+  .grid{display:grid; gap:16px}
+  .cards-4{grid-template-columns:repeat(4,1fr)}
+  .cards-3{grid-template-columns:repeat(3,1fr)}
+  .cards-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:860px){.cards-4{grid-template-columns:repeat(2,1fr)} .cards-3,.cards-2{grid-template-columns:1fr}}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; box-shadow:var(--shadow)}
+  .kpi .label{font-size:12px; color:var(--muted); font-weight:600}
+  .kpi .value{font-size:24px; font-weight:800; color:var(--navy); margin:4px 0 2px; letter-spacing:-.5px}
+  .kpi .sub{font-size:12px; color:var(--slate)}
+
+  .chart-card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .chart-card h3{margin:0 0 12px; font-size:15px; font-weight:700}
+  .chart-box{position:relative; height:300px}
+  .chart-box.tall{height:360px}
+
+  /* Tabs */
+  .tabs{display:flex; gap:6px; border-bottom:2px solid var(--line); margin:6px 0 18px}
+  .tabs button{background:none; border:none; padding:10px 14px; font-size:14px; font-weight:700; color:var(--muted);
+    cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px}
+  .tabs button.active{color:var(--navy); border-bottom-color:var(--navy)}
+  .tabpane{display:none} .tabpane.active{display:block}
+
+  table{width:100%; border-collapse:collapse; font-size:13px; background:#fff; border-radius:12px; overflow:hidden}
+  th,td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:#f1f5f9; font-weight:700; color:var(--slate); font-size:12px}
+  tr:last-child td{border-bottom:none}
+
+  .pill{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px}
+  .pill.hi{background:#fee2e2; color:#991b1b}
+  .pill.mid{background:#fef3c7; color:#92400e}
+  .pill.lo{background:#dcfce7; color:#166534}
+
+  ul.clean{list-style:none; padding:0; margin:0}
+  ul.clean li{padding:8px 0 8px 26px; position:relative; border-bottom:1px dashed var(--line); font-size:14px}
+  ul.clean li:before{content:"✓"; position:absolute; left:0; top:8px; color:var(--teal); font-weight:800}
+  ul.clean li:last-child{border-bottom:none}
+
+  /* Funnel */
+  .funnel{display:flex; flex-direction:column; gap:8px; align-items:center; margin-top:6px}
+  .funnel .row{color:#fff; border-radius:10px; padding:12px 16px; text-align:center; box-shadow:var(--shadow)}
+  .funnel .t{font-weight:800; font-size:13px} .funnel .v{font-size:13px; opacity:.95}
+  .f1{background:var(--navy); width:100%}
+  .f2{background:var(--navy2); width:72%}
+  .f3{background:var(--teal); width:46%}
+
+  /* Forces */
+  .force{display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px dashed var(--line)}
+  .force:last-child{border-bottom:none}
+  .force .fl{flex:1; font-size:14px; font-weight:600}
+  .force .bar{flex:1.4; height:10px; background:#eef2f7; border-radius:6px; overflow:hidden}
+  .force .bar i{display:block; height:100%}
+
+  /* Flow */
+  .flow{display:flex; flex-wrap:wrap; gap:10px; align-items:stretch}
+  .flow .step{flex:1; min-width:180px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px}
+  .flow .step .h{font-weight:800; font-size:14px; margin-bottom:4px}
+  .flow .step .d{font-size:12.5px; color:var(--slate)}
+  .flow .arrow{display:flex; align-items:center; color:var(--muted); font-size:20px}
+  @media(max-width:860px){.flow .arrow{display:none}}
+
+  /* BBB */
+  .bbb{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  @media(max-width:860px){.bbb{grid-template-columns:1fr}}
+  .bbb .col{border:1px solid var(--line); border-radius:14px; padding:16px; background:#fff; box-shadow:var(--shadow)}
+  .bbb .col h4{margin:0 0 4px; font-size:16px; font-weight:800}
+  .bbb .verdict-tag{font-size:12px; font-weight:800; padding:3px 9px; border-radius:999px; display:inline-block; margin-bottom:8px}
+  .vt-rec{background:#dcfce7; color:#166534}
+  .vt-opt{background:#e0f2fe; color:#075985}
+  .vt-no{background:#fee2e2; color:#991b1b}
+  .bbb .col p{font-size:13px; color:var(--slate); margin:6px 0 0}
+
+  /* Accordion */
+  details.acc{background:#fff; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; overflow:hidden}
+  details.acc summary{cursor:pointer; padding:12px 16px; font-weight:700; font-size:14px; list-style:none}
+  details.acc summary::-webkit-details-marker{display:none}
+  details.acc summary:before{content:"▸ "; color:var(--teal)}
+  details.acc[open] summary:before{content:"▾ "}
+  details.acc .body{padding:0 16px 14px}
+  details.acc .body a{display:block; font-size:12.5px; padding:5px 0; border-bottom:1px dashed var(--line)}
+
+  .note{background:#fffbeb; border:1px solid #fde68a; color:#854d0e; font-size:12.5px; padding:10px 14px; border-radius:10px; margin-top:14px}
+  footer{margin-top:40px; padding:24px 0 50px; color:var(--muted); font-size:12px; border-top:1px solid var(--line)}
+
+  @media print{
+    nav.sticky,.btn{display:none!important}
+    header.hero{background:var(--navy)!important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    section{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <span class="tag" id="h-tag"></span>
+    <h1 id="h-title"></h1>
+    <div class="sub" id="h-sub"></div>
+    <div class="verdict">
+      <span class="badge watchgo" id="h-badge"></span>
+      <span class="vtext" id="h-vtext"></span>
+    </div>
+  </div>
+</header>
+
+<nav class="sticky">
+  <div class="wrap">
+    <a href="#summary">종합</a>
+    <a href="#market">시장</a>
+    <a href="#competition">경쟁</a>
+    <a href="#regulation">규제</a>
+    <a href="#opinion">진입의견·B/B/B</a>
+    <a href="#sources">출처</a>
+    <span class="spacer"></span>
+    <button class="btn" onclick="window.print()">🖨 PDF 저장</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2 class="sec"><span class="n">◆</span>종합 평가</h2>
+    <p class="sec-desc">3개 도메인(시장·경쟁·규제) 리서치를 종합한 진입 초기의견.</p>
+    <div class="grid cards-4" id="kpis"></div>
+    <div class="grid cards-2" style="margin-top:16px">
+      <div class="chart-card"><h3>4축 종합 평가 (5점 척도, 높을수록 우호적)</h3><div class="chart-box"><canvas id="radarChart"></canvas></div></div>
+      <div class="card">
+        <h3 style="margin:0 0 10px; font-size:15px">핵심 논리</h3>
+        <ul class="clean" id="summaryPoints"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABS: market / competition / regulation -->
+  <section>
+    <div class="tabs" id="domainTabs">
+      <button data-pane="market" class="active">① 시장조사</button>
+      <button data-pane="competition">② 경쟁환경</button>
+      <button data-pane="regulation">③ 규제</button>
+    </div>
+
+    <!-- MARKET -->
+    <div class="tabpane active" id="market">
+      <h2 class="sec"><span class="n">1</span>시장조사</h2>
+      <p class="sec-desc">융합 신생시장 — 인접 카테고리 기반 추정. 모든 수치 출처·연도 병기(출처 탭 참조).</p>
+      <div class="grid cards-2">
+        <div class="chart-card"><h3>인접 시장 규모 추이 (억 USD)</h3><div class="chart-box"><canvas id="marketSizeChart"></canvas></div></div>
+        <div class="chart-card"><h3>세그먼트별 CAGR (%)</h3><div class="chart-box"><canvas id="cagrChart"></canvas></div></div>
+      </div>
+      <div class="grid cards-2" style="margin-top:16px">
+        <div class="chart-card"><h3>TAM / SAM / SOM (2030, 추정)</h3>
+          <div class="funnel" id="funnel"></div>
+          <div class="note">⚠️ 단일 통계 부재로 인접시장+가정 기반 추정. SOM 불확실성 높음.</div>
+        </div>
+        <div class="card"><h3 style="margin:0 0 10px; font-size:15px">성장 동인</h3><ul class="clean" id="drivers"></ul></div>
+      </div>
+    </div>
+
+    <!-- COMPETITION -->
+    <div class="tabpane" id="competition">
+      <h2 class="sec"><span class="n">2</span>경쟁환경</h2>
+      <p class="sec-desc">기능별 3개 트랙으로 분화. 양산·상용화된 프리미엄 제품은 나무엑스가 사실상 유일.</p>
+      <div class="chart-card"><h3>플레이어 포지셔닝 맵 (x: 상용화 성숙도 · y: 프리미엄/가격대 · 원 크기: 시장 영향력)</h3>
+        <div class="chart-box tall"><canvas id="bubbleChart"></canvas></div></div>
+      <div class="grid cards-2" style="margin-top:16px">
+        <div class="card"><h3 style="margin:0 0 10px; font-size:15px">경쟁 다이내믹스 (5 Forces)</h3><div id="forces"></div></div>
+        <div class="card"><h3 style="margin:0 0 10px; font-size:15px">⚠️ 경쟁 생보사 선행 동향</h3><ul class="clean" id="incumbents"></ul></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin:0 0 12px; font-size:15px">주요 플레이어 비교</h3>
+        <div style="overflow-x:auto"><table id="playerTable"></table></div>
+      </div>
+    </div>
+
+    <!-- REGULATION -->
+    <div class="tabpane" id="regulation">
+      <h2 class="sec"><span class="n">3</span>규제</h2>
+      <p class="sec-desc">기능·클레임에 따라 규제 강도 결정. 생보사 진입경로는 열려 있음.
+        <strong>본 내용은 1차 의견이며 최종 법무·컴플라이언스 검토 필요.</strong></p>
+      <div class="card"><h3 style="margin:0 0 12px; font-size:15px">제품 분류 의사결정 (생체신호 측정 제품)</h3>
+        <div class="flow" id="regFlow"></div></div>
+      <div class="card" style="margin-top:16px"><h3 style="margin:0 0 12px; font-size:15px">B/B/B 경로별 규제 관문 체크리스트</h3>
+        <div style="overflow-x:auto"><table id="regChecklist"></table></div></div>
+    </div>
+  </section>
+
+  <!-- OPINION -->
+  <section id="opinion">
+    <h2 class="sec"><span class="n">◎</span>진입 초기의견 &amp; B/B/B</h2>
+    <p class="sec-desc" id="recoText"></p>
+    <div class="grid cards-2">
+      <div class="chart-card"><h3>Build / Borrow / Buy 적합도 비교 (5점 척도)</h3><div class="chart-box"><canvas id="bbbChart"></canvas></div></div>
+      <div class="bbb" id="bbbCards" style="grid-template-columns:1fr"></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3 style="margin:0 0 10px; font-size:15px">다음 단계</h3><ul class="clean" id="nextSteps"></ul></div>
+  </section>
+
+  <!-- SOURCES -->
+  <section id="sources">
+    <h2 class="sec"><span class="n">⌕</span>출처</h2>
+    <p class="sec-desc">도메인별 1차 출처. 수치·규제는 의사결정 전 원문 재확인 권장.</p>
+    <div id="sourceAcc"></div>
+  </section>
+
+  <footer>
+    <div id="footMeta"></div>
+    <div style="margin-top:8px">신사업 발굴 에이전트 자동 생성 리포트 · 데이터 구동형 재사용 템플릿(<code>REPORT</code> 객체 교체 시 타 영역 동일 렌더).</div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   REPORT — 데이터 객체 (이 객체만 교체하면 다른 신사업 영역도 동일 렌더)
+   ============================================================ */
+const REPORT = {
+  meta:{
+    tag:"신사업 발굴 · 파일럿",
+    title:"AI 웰니스로봇 — 신사업 발굴 리포트",
+    subtitle:"참고 모델: SK인텔릭스 '나무엑스(NAMUHX) A1' · 기준일 2026-06-05 · 대상: 생명보험사 신사업추진",
+    foot:"기준일 2026-06-05 · 출처: 통계청·KIRI·KIRIA·금융위·식약처·Grand View·Mordor 등 (상세 출처 탭 참조)"
+  },
+  verdict:{ badge:"조건부 Go", text:"직접 제조(Build)는 No-go. 디바이스는 제휴 조달, 웰니스로봇을 '건강·요양 데이터 접점'으로 쓰는 Borrow 중심 B2B2C + 선택적 Buy(지분투자) 권고." },
+  kpis:[
+    {label:"시장 CAGR (헬스케어 컴패니언 로봇)", value:"~17.6%", sub:"2025–2030, Grand View"},
+    {label:"TAM (글로벌, 2030 추정)", value:"80~120억$", sub:"컴패니언+시니어케어 로봇"},
+    {label:"SAM / SOM (한국, 2030 추정)", value:"~4,750 / ~570억원", sub:"중간값 기준"},
+    {label:"초고령사회 (65세+ 비중)", value:"20.3%", sub:"2025, 통계청 — 핵심 수요동인"}
+  ],
+  scores:{ labels:["시장 매력도","경쟁 우호도","규제 용이성","전략적 적합성"], values:[4.0,2.5,3.0,5.0] },
+  summaryPoints:[
+    "인접시장 고성장(CAGR 16~28%) + 초고령사회·독거노인 214만·노인장기요양 복지용구 AI 돌봄로봇 예비급여 편입(2024).",
+    "양산·상용화 프리미엄 제품은 나무엑스 A1이 사실상 유일(삼성 볼리·LG Q9 출시 연기).",
+    "경쟁 생보사 선행(신한라이프·KT·케어링) → 차별화 시급.",
+    "생보사 적합성 최상: 건강증진형 보험·시니어/요양 신사업·헬스케어 데이터 접점과 직접 연계."
+  ],
+  market:{
+    sizes:{ categories:["헬스케어 컴패니언 로봇","시니어케어 보조로봇"], y2024:[20.9,31], y2030:[54.8,77] },
+    cagr:{ labels:["소비자로봇 개인건강·웰니스","글로벌 서비스로봇","헬스케어 컴패니언 로봇","시니어케어 보조로봇"], values:[28.1,19.5,17.6,16.1] },
+    funnel:[
+      {t:"TAM (글로벌)", v:"약 80~120억 USD"},
+      {t:"SAM (한국)", v:"약 2,700~6,800억 원"},
+      {t:"SOM (자사, 5년)", v:"약 135~1,000억 원"}
+    ],
+    drivers:[
+      "초고령사회 진입(2025년 65세+ 20.3%, 2036년 30% 전망)",
+      "1인가구 36.1%·독거노인 약 214만 가구 → 비대면 모니터링 수요",
+      "노인장기요양보험 복지용구 예비급여에 AI 돌봄로봇 편입(2024) → 공적 채널",
+      "디지털 헬스케어 확산(국내 2024년 약 4.7조원), 비접촉 생체측정 기술 성숙"
+    ]
+  },
+  competition:{
+    players:[
+      {n:"나무엑스 A1 (SK인텔릭스)", x:9, y:8, r:24, c:"#0f3a5f"},
+      {n:"삼성 볼리", x:3, y:8, r:18, c:"#16527f"},
+      {n:"LG Q9", x:2, y:7, r:15, c:"#16527f"},
+      {n:"효돌", x:8, y:2, r:15, c:"#14b8a6"},
+      {n:"원더풀플랫폼 다솜", x:7, y:3, r:11, c:"#14b8a6"},
+      {n:"로보케어", x:6, y:4, r:10, c:"#14b8a6"},
+      {n:"ElliQ (미국)", x:8, y:5, r:13, c:"#f59e0b"},
+      {n:"Unitree (중국)", x:5, y:2, r:11, c:"#94a3b8"}
+    ],
+    forces:[
+      {n:"신규 진입 위협", lvl:"높음", v:85},
+      {n:"공급자 교섭력", lvl:"중간", v:55},
+      {n:"구매자 교섭력", lvl:"높음", v:80},
+      {n:"대체재 위협", lvl:"높음", v:80},
+      {n:"기존 경쟁강도", lvl:"중간", v:55}
+    ],
+    incumbents:[
+      "신한라이프 — 시니어 자회사 신한라이프케어(2024.1), LGU+·KAIST 헬스케어 제휴",
+      "KT — AI 케어로봇 사업(엔터프라이즈) 운영",
+      "케어링 — 모션스케일 사업부 신설(2025.10), 돌봄로봇 생태계 진입"
+    ],
+    players_table:[
+      ["나무엑스 A1 (SK인텔릭스)","프리미엄 자율주행 웰니스","렌탈/구독(SK매직)","양산·예약판매, CES 2026 혁신상","hi"],
+      ["삼성 볼리","가정용 AI 홈 허브","단품(미정)","출시 반복 연기","mid"],
+      ["LG Q9","이동형 AI 홈 허브","미정","공개·출시 연기","mid"],
+      ["효돌","시니어 정서지원 인형형","B2G(지자체)","118개 지자체 5,800대","lo"],
+      ["ElliQ (미국)","독거 시니어 컴패니언","구독($249+월$30~59)","상용·공공재원 보급","lo"],
+      ["Unitree (중국)","저가 휴머노이드","디바이스 판매","국가 시범사업","mid"]
+    ]
+  },
+  regulation:{
+    flow:[
+      {h:"① 사용목적·클레임", d:"질병 진단/치료/예방 표방 여부가 1차 분기점"},
+      {h:"웰니스(공산품)", d:"일상 건강관리·코칭 표시 → 허가 불요, 신속 출시"},
+      {h:"디지털의료·건강지원기기", d:"생체신호 모니터링·분석(디지털의료제품법 2025.1.24) → 자율신고·성능인증"},
+      {h:"의료기기", d:"부정맥·질환 진단·경보 표방 → 식약처 허가(2등급 등)"}
+    ],
+    checklist:[
+      ["Build (자체·직접영위)","제품분류(식약처)+부수업무 신고(금융위)+민감정보(개인정보위)","웰니스/디지털건강지원기기/의료기기 분류 확정, 부수업무 7일 전 신고, 생체정보 별도동의"],
+      ["Borrow (제휴)","부수업무+개인정보 처리위탁","제휴구조 신고대상 여부, 위탁계약 통제, 건강관리기기 선제공 시 보험위험 감소효과 검증"],
+      ["Buy (지분투자·M&A)","자회사 소유 승인/신고(보험업법 §109·§115)","15%초과 자회사 요건·금융위 2개월, 재무건전성, 제조사면 GMP 승계"]
+    ]
+  },
+  opinion:{
+    reco:"종합 권고: 조건부 Go. 하드웨어 직접 제조는 대기업·중국 대비 열위 → 디바이스는 제휴 조달하고, 웰니스로봇을 건강·요양 데이터 접점(엣지)으로 활용하는 B2B2C 번들(보험+구독형 로봇+건강데이터 부가서비스)이 핵심. → Phase 2(추진방향 에이전트)로 핸드오프.",
+    bbbChart:{ criteria:["실행 속도","자본 효율","역량 내재화","리스크 관리"],
+      Build:[2,2,5,2], Borrow:[5,5,3,4], Buy:[3,2,4,3] },
+    bbb:[
+      {name:"Build", tag:"비권장", cls:"vt-no", note:"하드웨어·AI 공급자 의존, 대기업/중국 경쟁 열위. 자본·역량 대비 비효율."},
+      {name:"Borrow", tag:"권장 · 1순위", cls:"vt-rec", note:"나무엑스(SK인텔릭스) 1순위 + 효돌·다솜·ElliQ. 보험+구독로봇+건강데이터 B2B2C 번들."},
+      {name:"Buy", tag:"선택적", cls:"vt-opt", note:"헬스케어·로봇 스타트업 지분투자(§115 자회사). 데이터·역량 내재화 목적. 자회사 승인·재무요건 검토."}
+    ],
+    nextSteps:[
+      "Phase 2 추진방향 에이전트로 핸드오프 — B/B/B 정밀 비교, 제휴 후보 숏리스트, 협업구조 설계",
+      "조기 PoC 설계 — 요양시설·우량 고객군 대상 건강데이터·레퍼런스 선점",
+      "규제 사전 점검 — 식약처 제품분류 상담, 부수업무/자회사 경로 법무 검토",
+      "수치 재검증 — KIRIA 실태조사·Grand View/Mordor 원문으로 TAM/SAM/SOM 확정"
+    ]
+  },
+  sources:{
+    "시장조사":[
+      ["Healthcare Companion Robots Market — Grand View Research","https://www.grandviewresearch.com/industry-analysis/healthcare-companion-robots-market-report"],
+      ["Elder Care Assistive Robots Market — Research and Markets","https://www.researchandmarkets.com/report/elder-care-robots-market"],
+      ["Consumer Robotics Market — Mordor Intelligence","https://www.mordorintelligence.com/industry-reports/consumer-robotics-market"],
+      ["2025 고령자 통계 — 통계청","https://www.kostat.go.kr/board.es?mid=a10301010000&bid=10820&act=view&list_no=438832"],
+      ["NAMUHX 공식","https://www.namuhx.com/"]
+    ],
+    "경쟁환경":[
+      ["SK인텔릭스 나무엑스 양산 — 로봇신문","https://www.irobotnews.com/news/articleView.html?idxno=43117"],
+      ["나무엑스 CES 2026 혁신상 — 뉴스1","https://www.news1.kr/industry/sb-founded/5970350"],
+      ["삼성 볼리 6년째 출시 미뤄져 — 글로벌이코노믹","http://m.g-enews.com/view.php?ud=202512080706205076fbbec65dfb_1"],
+      ["ElliQ 상용화 — Intuition Robotics","https://www.intuitionrobotics.com/post/announcement-commercial-availability-of-elliq"],
+      ["신한라이프 시니어 사업 본격화 — 한국보험신문","https://www.insnews.co.kr/news/articleView.html?idxno=88667"]
+    ],
+    "규제":[
+      ["의료기기 vs 웰니스 제품 판단기준 — KHIDI/식약처","https://www.khidi.or.kr/board/view?menuId=MENU01525&linkId=209153"],
+      ["디지털의료제품법 — 국가법령정보센터","https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=259299"],
+      ["보험업권 디지털 헬스케어 활성화 방안 — 금융위","https://www.fsc.go.kr/no010101/76224"],
+      ["보험업법 §115(자회사 소유) — 국가법령정보센터","https://law.go.kr/%EB%B2%95%EB%A0%B9/%EB%B3%B4%ED%97%98%EC%97%85%EB%B2%95/%EC%A0%9C115%EC%A1%B0"],
+      ["건강증진형 보험상품 가이드라인 개정 — 정책브리핑","https://www.korea.kr/news/pressReleaseView.do?newsId=156364744"]
+    ]
+  }
+};
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const $=(s)=>document.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+const C={navy:"#0f3a5f",navy2:"#16527f",teal:"#14b8a6",amber:"#f59e0b",slate:"#475569",line:"#e2e8f0"};
+Chart.defaults.font.family='-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+Chart.defaults.font.size=12; Chart.defaults.color="#475569";
+
+// header
+$("#h-tag").textContent=REPORT.meta.tag;
+$("#h-title").textContent=REPORT.meta.title;
+$("#h-sub").textContent=REPORT.meta.subtitle;
+$("#h-badge").textContent="판정: "+REPORT.verdict.badge;
+$("#h-vtext").textContent=REPORT.verdict.text;
+$("#footMeta").textContent=REPORT.meta.foot;
+
+// kpis
+REPORT.kpis.forEach(k=>{
+  const c=el("div","card kpi");
+  c.appendChild(el("div","label",k.label));
+  c.appendChild(el("div","value",k.value));
+  c.appendChild(el("div","sub",k.sub));
+  $("#kpis").appendChild(c);
+});
+// summary points
+REPORT.summaryPoints.forEach(p=>$("#summaryPoints").appendChild(el("li",null,p)));
+// drivers
+REPORT.market.drivers.forEach(d=>$("#drivers").appendChild(el("li",null,d)));
+// incumbents
+REPORT.competition.incumbents.forEach(d=>$("#incumbents").appendChild(el("li",null,d)));
+// next steps
+REPORT.opinion.nextSteps.forEach(d=>$("#nextSteps").appendChild(el("li",null,d)));
+$("#recoText").textContent=REPORT.opinion.reco;
+
+// funnel
+REPORT.market.funnel.forEach((f,i)=>{
+  const r=el("div","row f"+(i+1));
+  r.appendChild(el("div","t",f.t));
+  r.appendChild(el("div","v",f.v));
+  $("#funnel").appendChild(r);
+});
+// forces
+REPORT.competition.forces.forEach(f=>{
+  const row=el("div","force");
+  row.appendChild(el("div","fl",f.n));
+  const cls=f.v>=75?"#dc2626":f.v>=50?"#f59e0b":"#16a34a";
+  const bar=el("div","bar"); const i=el("i"); i.style.width=f.v+"%"; i.style.background=cls; bar.appendChild(i);
+  row.appendChild(bar);
+  const p=el("span"); p.style.cssText="font-size:12px;font-weight:700;width:42px;text-align:right;color:"+cls; p.textContent=f.lvl;
+  row.appendChild(p);
+  $("#forces").appendChild(row);
+});
+// reg flow
+REPORT.regulation.flow.forEach((s,idx)=>{
+  const step=el("div","step");
+  step.appendChild(el("div","h",s.h));
+  step.appendChild(el("div","d",s.d));
+  $("#regFlow").appendChild(step);
+  if(idx<REPORT.regulation.flow.length-1) $("#regFlow").appendChild(el("div","arrow","→"));
+});
+
+// player table
+(function(){
+  const t=$("#playerTable");
+  t.innerHTML="<thead><tr><th>기업/제품</th><th>포지션</th><th>모델</th><th>상태</th><th>성숙도</th></tr></thead>";
+  const tb=el("tbody");
+  REPORT.competition.players_table.forEach(r=>{
+    const tr=el("tr");
+    tr.innerHTML=`<td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><span class="pill ${r[4]}">${r[4]=="hi"?"상용화":r[4]=="mid"?"개발/지연":"보급중"}</span></td>`;
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+})();
+// reg checklist
+(function(){
+  const t=$("#regChecklist");
+  t.innerHTML="<thead><tr><th>경로</th><th>규제 관문</th><th>핵심 점검</th></tr></thead>";
+  const tb=el("tbody");
+  REPORT.regulation.checklist.forEach(r=>{
+    const tr=el("tr"); tr.innerHTML=`<td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td>`; tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+})();
+// bbb cards
+REPORT.opinion.bbb.forEach(b=>{
+  const col=el("div","col");
+  col.innerHTML=`<h4>${b.name}</h4><span class="verdict-tag ${b.cls}">${b.tag}</span><p>${b.note}</p>`;
+  $("#bbbCards").appendChild(col);
+});
+// sources accordion
+Object.entries(REPORT.sources).forEach(([k,arr],i)=>{
+  const d=el("details","acc"); if(i===0)d.open=true;
+  d.appendChild(el("summary",null,k+" ("+arr.length+")"));
+  const body=el("div","body");
+  arr.forEach(s=>{ const a=el("a"); a.href=s[1]; a.target="_blank"; a.rel="noopener"; a.textContent=s[0]; body.appendChild(a); });
+  d.appendChild(body);
+  $("#sourceAcc").appendChild(d);
+});
+
+/* Charts */
+new Chart($("#radarChart"),{type:"radar",
+  data:{labels:REPORT.scores.labels,datasets:[{data:REPORT.scores.values,
+    backgroundColor:"rgba(20,184,166,.18)",borderColor:C.teal,borderWidth:2,pointBackgroundColor:C.navy,pointRadius:4}]},
+  options:{plugins:{legend:{display:false}},scales:{r:{min:0,max:5,ticks:{stepSize:1,backdropColor:"transparent"},pointLabels:{font:{size:12,weight:"700"}}}}}});
+
+new Chart($("#marketSizeChart"),{type:"bar",
+  data:{labels:REPORT.market.sizes.categories,datasets:[
+    {label:"2024",data:REPORT.market.sizes.y2024,backgroundColor:C.line,borderRadius:6},
+    {label:"2030(전망)",data:REPORT.market.sizes.y2030,backgroundColor:C.navy,borderRadius:6}]},
+  options:{plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true,title:{display:true,text:"억 USD"}}}}});
+
+new Chart($("#cagrChart"),{type:"bar",
+  data:{labels:REPORT.market.cagr.labels,datasets:[{data:REPORT.market.cagr.values,
+    backgroundColor:[C.amber,C.navy2,C.teal,C.slate],borderRadius:6}]},
+  options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+"%"}}},
+    scales:{x:{beginAtZero:true,title:{display:true,text:"CAGR %"}}}}});
+
+new Chart($("#bubbleChart"),{type:"bubble",
+  data:{datasets:REPORT.competition.players.map(p=>({label:p.n,
+    data:[{x:p.x,y:p.y,r:p.r}],backgroundColor:p.c+"cc",borderColor:p.c,borderWidth:1}))},
+  options:{plugins:{legend:{position:"right",labels:{boxWidth:10,font:{size:11}}},
+    tooltip:{callbacks:{label:c=>c.dataset.label+" (성숙도 "+c.raw.x+", 프리미엄 "+c.raw.y+")"}}},
+    scales:{x:{min:0,max:10,title:{display:true,text:"상용화 성숙도 →"}},
+      y:{min:0,max:10,title:{display:true,text:"프리미엄/가격대 →"}}}}});
+
+(function(){
+  const b=REPORT.opinion.bbbChart;
+  new Chart($("#bbbChart"),{type:"bar",
+    data:{labels:b.criteria,datasets:[
+      {label:"Build",data:b.Build,backgroundColor:"#dc2626cc",borderRadius:5},
+      {label:"Borrow",data:b.Borrow,backgroundColor:"#16a34acc",borderRadius:5},
+      {label:"Buy",data:b.Buy,backgroundColor:"#0284c7cc",borderRadius:5}]},
+    options:{plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true,max:5,title:{display:true,text:"점수(5점)"}}}}});
+})();
+
+/* Tabs */
+document.querySelectorAll("#domainTabs button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("#domainTabs button").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tabpane").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active"); $("#"+btn.dataset.pane).classList.add("active");
+  });
+});
+
+/* Scroll-spy nav */
+const navLinks=document.querySelectorAll("nav.sticky a");
+const secs=[...navLinks].map(a=>document.querySelector(a.getAttribute("href"))).filter(Boolean);
+window.addEventListener("scroll",()=>{
+  let cur=secs[0]?.id;
+  secs.forEach(s=>{ if(window.scrollY>=s.offsetTop-120) cur=s.id; });
+  navLinks.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+cur));
+},{passive:true});
+</script>
+</body>
+</html>
