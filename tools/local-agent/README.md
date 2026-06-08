@@ -4,11 +4,15 @@
 시장·경쟁·규제를 **내장 웹검색**으로 리서치하고 인터랙티브 리포트로 렌더합니다.
 **Anthropic 종량 API 키가 필요 없습니다.**
 
-## 동작 방식
+## 동작 방식 (오케스트레이터: 3 리서처 병렬 + 종합)
 ```
-브라우저 폼  →  로컬 서버(server.mjs)  →  claude -p (구독 인증 + 내장 WebSearch)
-                                            → REPORT JSON  →  reports/report.html 렌더
+브라우저 폼 → server.mjs → ┌ claude -p (시장 리서처) ┐
+   (POST /generate,        ├ claude -p (경쟁 리서처) ┤ 병렬 → claude -p (종합) → REPORT JSON
+    jobId 즉시 반환)        └ claude -p (규제 리서처) ┘                         → reports/report.html
+   GET /status?id=.. 폴링으로 진행상황(시장/경쟁/규제/종합) 표시
 ```
+- 1건당 **`claude -p` 4회**(병렬 3 + 종합)로, 단일 패스보다 깊지만 시간·구독 크레딧이 약 3~4배입니다.
+- 비동기 작업+폴링 구조라 장시간 실행도 (터널의) 요청 타임아웃에 걸리지 않습니다.
 
 ## 사전 조건
 1. **Node.js 18+**

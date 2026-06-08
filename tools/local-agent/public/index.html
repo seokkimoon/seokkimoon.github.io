@@ -82,21 +82,29 @@ $("#benchInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDef
 $$("#region button").forEach(b=>b.onclick=()=>{$$("#region button").forEach(x=>x.classList.remove("on"));b.classList.add("on");state.region=b.dataset.v;});
 function log(t){const b=$("#log");b.style.display="block";const d=document.createElement("div");d.textContent=t;b.appendChild(d);b.scrollTop=b.scrollHeight;}
 try{const p=localStorage.getItem("nbd_pass");if(p)$("#pass").value=p;}catch(e){}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 $("#genBtn").onclick=async()=>{
   if(!state.area){alert("신사업 영역을 입력하세요.");return;}
   try{localStorage.setItem("nbd_pass",$("#pass").value);}catch(e){}
   const btn=$("#genBtn");btn.disabled=true;const orig=btn.textContent;btn.textContent="생성 중… (수분 소요)";$("#log").innerHTML="";
-  log("Claude Code(구독)로 리서치 시작 — 영역: "+state.area);
-  log("※ 웹검색을 여러 번 수행하므로 완료까지 시간이 걸립니다.");
+  log("리서치 시작 — 시장·경쟁·규제 3개 리서처 병렬 + 종합 ("+state.area+")");
+  log("※ 4회의 심층 리서치라 수분 소요됩니다. 창을 닫지 마세요.");
   try{
     const res=await fetch("/generate",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({area:state.area,lenses:[...state.lenses],benchmarks:state.benchmarks,region:state.region,password:$("#pass").value})});
     const data=await res.json();
-    if(!data.ok)throw new Error(data.error||"생성 실패");
-    sessionStorage.setItem("nbd_report",JSON.stringify(data.report));
-    log("✅ 완료 — 리포트로 이동합니다");
-    location.href="/report.html";
-  }catch(e){log("✗ 오류: "+(e&&e.message||e));log("※ 터미널 로그와 claude 로그인 상태를 확인하세요.");btn.disabled=false;btn.textContent=orig;}
+    if(!data.ok)throw new Error(data.error||"시작 실패");
+    const jobId=data.jobId;
+    let last="";
+    while(true){
+      await sleep(3000);
+      let s;
+      try{ s=await (await fetch("/status?id="+encodeURIComponent(jobId))).json(); }catch(e){ continue; }
+      if(s.steps){const t="진행 — 시장:"+s.steps.market+" / 경쟁:"+s.steps.competition+" / 규제:"+s.steps.regulation+" / 종합:"+s.steps.synth;if(t!==last){log(t);last=t;}}
+      if(s.state==="done"){sessionStorage.setItem("nbd_report",JSON.stringify(s.report));log("✅ 완료 — 리포트로 이동합니다");location.href="/report.html";return;}
+      if(s.state==="error")throw new Error(s.error||"생성 실패");
+    }
+  }catch(e){log("✗ 오류: "+(e&&e.message||e));log("※ 브리지 터미널 로그와 claude 로그인 상태를 확인하세요.");btn.disabled=false;btn.textContent=orig;}
 };
 </script>
 </body>
