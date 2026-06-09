@@ -5,8 +5,15 @@ cd /d "%~dp0"
 where node >nul 2>nul
 if errorlevel 1 (
   echo.
-  echo  [!] Node.js가 설치되어 있지 않습니다.
-  echo      https://nodejs.org  에서 LTS 버전을 설치한 뒤 이 파일을 다시 더블클릭하세요.
+  echo  [!] 아직 설치가 안 되어 있습니다. 먼저  SETUP.bat  을 더블클릭하세요.
+  echo.
+  pause
+  exit /b
+)
+where claude >nul 2>nul
+if errorlevel 1 (
+  echo.
+  echo  [!] 아직 설치가 안 되어 있습니다. 먼저  SETUP.bat  을 더블클릭하세요.
   echo.
   pause
   exit /b
