@@ -1,66 +1,64 @@
 @echo off
-chcp 65001 >nul
+title New Business Discovery - Setup (run once)
 cd /d "%~dp0"
-title 신사업 발굴 - 최초 설치 (1회만)
 
 echo.
-echo  ============================================================
-echo    신사업 발굴  -  최초 설치 (처음 한 번만 실행)
-echo  ============================================================
+echo  ==========================================================
+echo    New Business Discovery  -  First-time Setup (run once)
+echo  ==========================================================
 echo.
 
-REM ---- 1) Node.js 확인 ----
+REM ---- 1) Node.js ----
 where node >nul 2>nul
-if errorlevel 1 (
-  echo  [1/3] Node.js가 설치되어 있지 않습니다.
-  echo        설치 페이지를 엽니다. LTS 버튼으로 받아 설치한 뒤,
-  echo        이 SETUP 파일을 "다시" 더블클릭하세요.
-  echo.
-  start "" "https://nodejs.org/ko/download"
-  pause
-  exit /b
-)
-echo  [1/3] Node.js 확인 완료.
+if errorlevel 1 goto NO_NODE
+echo  [1/3] Node.js : OK
 echo.
 
-REM ---- 2) Claude 프로그램 설치 ----
+REM ---- 2) Claude CLI ----
 where claude >nul 2>nul
-if errorlevel 1 (
-  echo  [2/3] Claude 프로그램을 설치합니다... 1~2분 정도 걸립니다.
-  call npm install -g @anthropic-ai/claude-code
-  if errorlevel 1 (
-    echo.
-    echo  [!] 설치에 실패했습니다. 인터넷 연결 확인 후 SETUP을 다시 실행하세요.
-    pause
-    exit /b
-  )
-) else (
-  echo  [2/3] Claude 프로그램 확인 완료.
-)
-echo.
+if errorlevel 1 goto INSTALL_CLAUDE
+echo  [2/3] Claude   : OK
+goto LOGIN
 
-REM ---- 3) 로그인 ----
-echo  [3/3] 로그인 창을 엽니다.
-echo.
-echo        * 잠시 후 Claude 화면이 뜨면, 안내에 따라
-echo          구독 계정(claude.ai)으로 로그인하세요. (브라우저가 열립니다)
-echo        * 로그인이 끝나면 그 화면에서   /exit   라고 입력하고 엔터.
-echo.
-echo        준비되면 아무 키나 누르세요...
-pause >nul
-
+:INSTALL_CLAUDE
+echo  [2/3] Installing Claude ... (about 1-2 minutes)
+call npm install -g @anthropic-ai/claude-code
 where claude >nul 2>nul
-if errorlevel 1 (
-  echo.
-  echo  [!] claude 명령을 찾지 못했습니다. 이 창을 닫고 SETUP을 한 번 더 더블클릭하세요.
-  pause
-  exit /b
-)
-claude
+if errorlevel 1 goto NPM_FAIL
+echo        Claude installed.
 
+:LOGIN
 echo.
-echo  ============================================================
-echo    설치 완료!  이제부터는  START.bat  만 더블클릭하면 됩니다.
-echo  ============================================================
+echo  [3/3] Opening Claude to log in.
+echo.
+echo     - When Claude opens, follow the prompts and log in with
+echo       your subscription account (a web browser will open).
+echo     - After login finishes, type   /exit   and press Enter.
 echo.
 pause
+claude
+echo.
+echo  ==========================================================
+echo    Setup complete!  From now on, just run  START.bat
+echo  ==========================================================
+echo.
+pause
+goto END
+
+:NO_NODE
+echo  [1/3] Node.js is NOT installed.
+echo        Opening the download page now. Install the LTS version,
+echo        then double-click this SETUP file again.
+start "" "https://nodejs.org/en/download"
+echo.
+pause
+goto END
+
+:NPM_FAIL
+echo.
+echo  [!] Install failed. Check your internet connection and
+echo      run SETUP again.
+pause
+goto END
+
+:END
