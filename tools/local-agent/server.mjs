@@ -17,6 +17,7 @@ const REPORT_HTML = join(__dirname, '..', '..', 'reports', 'report.html');
 const INDEX_HTML = join(__dirname, 'public', 'index.html');
 const BRIDGE_PASSWORD = process.env.BRIDGE_PASSWORD || '';
 const DAILY_LIMIT = parseInt(process.env.BRIDGE_DAILY_LIMIT || '30', 10);
+const TIMEOUT = parseInt(process.env.CLAUDE_TIMEOUT || '900000', 10); // 단일 claude 호출 최대 대기(기본 15분)
 const usage = { date: '', count: 0 };
 const jobs = new Map(); // jobId -> { state, steps, report, error, ts }
 
@@ -80,19 +81,26 @@ ${r}`;
 function runClaudeText(prompt) {
   return new Promise((resolve, reject) => {
     // 프롬프트는 stdin으로 전달(인자 길이 한계·이스케이프 문제 회피).
-    // Windows에서는 claude가 claude.cmd 이므로 shell 경유로 실행해 ENOENT 방지.
+    // Windows에서는 claude가 claude.cmd 이므로 cmd.exe /c 로 실행해 ENOENT 방지(shell:true 미사용 → 경고 없음).
     const args = ['-p', '--output-format', 'json', '--allowedTools', 'WebSearch,WebFetch'];
     const isWin = process.platform === 'win32';
-    const cp = spawn(CLAUDE_BIN, args, { cwd: __dirname, shell: isWin });
-    let out = '', err = '';
+    const cmd = isWin ? (process.env.ComSpec || 'cmd.exe') : CLAUDE_BIN;
+    const cmdArgs = isWin ? ['/c', CLAUDE_BIN, ...args] : args;
+    const cp = spawn(cmd, cmdArgs, { cwd: __dirname });
+    let out = '', err = '', done = false;
+    const finish = (fn, v) => { if (done) return; done = true; clearTimeout(timer); fn(v); };
+    const timer = setTimeout(() => {
+      try { cp.kill(); } catch (e) {}
+      finish(reject, new Error('시간 초과(' + Math.round(TIMEOUT / 60000) + '분 경과). 네트워크/claude 로그인 상태를 확인하세요.'));
+    }, TIMEOUT);
     cp.stdout.on('data', d => (out += d));
     cp.stderr.on('data', d => (err += d));
-    cp.on('error', e => reject(new Error('claude 실행 실패(설치/PATH 확인): ' + e.message)));
+    cp.on('error', e => finish(reject, new Error('claude 실행 실패(설치/PATH 확인): ' + e.message)));
     cp.on('close', code => {
-      if (!out) return reject(new Error('claude 종료코드 ' + code + ': ' + (err.slice(0, 400) || '출력 없음')));
+      if (!out) return finish(reject, new Error('claude 종료코드 ' + code + ': ' + (err.slice(0, 400) || '출력 없음')));
       let text = out;
       try { const env = JSON.parse(out); if (env && typeof env.result === 'string') text = env.result; } catch (e) {}
-      resolve(text);
+      finish(resolve, text);
     });
     cp.stdin.on('error', () => {}); // EPIPE 무시
     cp.stdin.write(prompt);
@@ -108,14 +116,24 @@ function extractJson(text) {
 
 async function orchestrate(jobId, cfg) {
   const j = jobs.get(jobId);
+  const tag = jobId.slice(0, 8);
+  const logged = async (name, key, prompt) => {
+    const t = Date.now();
+    console.log('[' + tag + '] ' + name + ' 조사 시작...');
+    const r = await runClaudeText(prompt);
+    j.steps[key] = '완료';
+    console.log('[' + tag + '] ' + name + ' 완료 (' + Math.round((Date.now() - t) / 1000) + '초)');
+    return r;
+  };
   try {
     j.steps.market = j.steps.competition = j.steps.regulation = '조사 중';
     const [m, c, r] = await Promise.all([
-      runClaudeText(marketPrompt(cfg)).then(x => { j.steps.market = '완료'; return x; }),
-      runClaudeText(compPrompt(cfg)).then(x => { j.steps.competition = '완료'; return x; }),
-      runClaudeText(regPrompt(cfg)).then(x => { j.steps.regulation = '완료'; return x; }),
+      logged('시장', 'market', marketPrompt(cfg)),
+      logged('경쟁', 'competition', compPrompt(cfg)),
+      logged('규제', 'regulation', regPrompt(cfg)),
     ]);
     j.steps.synth = '종합 중';
+    console.log('[' + tag + '] 종합 시작...');
     const text = await runClaudeText(synthPrompt(cfg, m, c, r));
     j.report = extractJson(text);
     j.steps.synth = '완료';
