@@ -79,8 +79,11 @@ ${r}`;
 
 function runClaudeText(prompt) {
   return new Promise((resolve, reject) => {
-    const args = ['-p', prompt, '--output-format', 'json', '--allowedTools', 'WebSearch,WebFetch'];
-    const cp = spawn(CLAUDE_BIN, args, { cwd: __dirname });
+    // 프롬프트는 stdin으로 전달(인자 길이 한계·이스케이프 문제 회피).
+    // Windows에서는 claude가 claude.cmd 이므로 shell 경유로 실행해 ENOENT 방지.
+    const args = ['-p', '--output-format', 'json', '--allowedTools', 'WebSearch,WebFetch'];
+    const isWin = process.platform === 'win32';
+    const cp = spawn(CLAUDE_BIN, args, { cwd: __dirname, shell: isWin });
     let out = '', err = '';
     cp.stdout.on('data', d => (out += d));
     cp.stderr.on('data', d => (err += d));
@@ -91,6 +94,9 @@ function runClaudeText(prompt) {
       try { const env = JSON.parse(out); if (env && typeof env.result === 'string') text = env.result; } catch (e) {}
       resolve(text);
     });
+    cp.stdin.on('error', () => {}); // EPIPE 무시
+    cp.stdin.write(prompt);
+    cp.stdin.end();
   });
 }
 
